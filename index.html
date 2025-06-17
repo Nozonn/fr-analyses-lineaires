@@ -9,7 +9,29 @@
 </head>
 
 <body>
-    
+
+    <!-- Ajoute ce lecteur audio dans index.html -->
+    <aside id="music-player"
+    style="position:fixed; top:0px; left:0px; background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(30,60,114,0.12); padding:18px 22px; z-index:100;">
+    <h3 style="margin-top:0; font-size:1.1em; color:#1e3c72;">🎵 Musique</h3>
+    <select id="track-select" style="width:220px; margin-bottom:8px;"></select>
+    <audio id="audio" controls style="width:220px;">
+        <source src="" type="audio/mp3">
+        Votre navigateur ne supporte pas l'audio HTML5.
+    </audio>
+    <div style="margin-top:10px;" class="music-controls">
+        <button onclick="prevTrack()">⏮️</button>
+        <span id="track-title" class="music-title" style="margin-left:8px; font-size:0.95em;"></span>
+        <button onclick="nextTrack()">⏭️</button>
+    </div>
+    <div class="music-loop" style="margin-top:8px;">
+        <label style="font-size:0.95em;">
+            <input type="checkbox" id="loop-audio" style="vertical-align:middle; margin-right:4px;">
+            Lecture en boucle
+        </label>
+    </div>
+</aside>
+
     <main>
         <section id="excerpt-list-section">
             <h2>Textes</h2>

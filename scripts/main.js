@@ -304,3 +304,244 @@ let recapErrors = [];
 document.addEventListener('DOMContentLoaded', createExcerptList);
 
 
+
+
+// ====================
+
+// --- Lecteur de musique ---
+const tracks = [
+    { src: "obseques.mp3", title: "Les Obsèques de la Lionne" },
+    { src: "arrias.mp3", title: "Arias" },
+    { src: "gnathon.mp3", title: "Gnathon" },
+    { src: "pamphile.mp3", title: "Pamphile" },
+    { src: "cleves.mp3", title: "Excipit La Princesse de Clèves" },
+    { src: "lpdcExtrait1.mp3", title: "Extrait 1 La Peau de chagrin" },
+    { src: "lpdcExtrait2.mp3", title: "Extrait 2 La Peau de chagrin" },
+    { src: "charogne.mp3", title: "Une charogne" },
+    { src: "jetaime.mp3", title: "Je t'aime" },
+    { src: "longuesTrainees.mp3", title: "Mes forêts sont de longues traînées de temps" },
+    { src: "silhouetteMysterieuse.mp3", title: "On dirait une silhouette mystérieuse" },
+    { src: "tartuffe.mp3", title: "Tartuffe ou l'Imposteur" },
+    { src: "maladeImaginaire.mp3", title: "Le Malade imaginaire" },
+    { src: "obpa.mp3", title: "Dénouement On ne badine pas avec l'amour" },
+    // Ajoute d'autres fichiers mp3 ici
+];
+let currentTrack = 0;
+
+function populateTrackSelect() {
+    const select = document.getElementById('track-select');
+    select.innerHTML = '';
+    tracks.forEach((track, idx) => {
+        const option = document.createElement('option');
+        option.value = idx;
+        option.textContent = track.title;
+        select.appendChild(option);
+    });
+    select.value = currentTrack;
+}
+
+
+
+
+
+function loadTrack(idx) {
+    const audio = document.getElementById('audio');
+    audio.src = tracks[idx].src;
+    document.getElementById('track-title').textContent = tracks[idx].title;
+    document.getElementById('track-select').value = idx;
+    audio.load();
+}
+
+function nextTrack() {
+    currentTrack = (currentTrack + 1) % tracks.length;
+    loadTrack(currentTrack);
+    document.getElementById('audio').play();
+}
+
+function prevTrack() {
+    currentTrack = (currentTrack - 1 + tracks.length) % tracks.length;
+    loadTrack(currentTrack);
+    document.getElementById('audio').play();
+}
+
+
+
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    const player = document.getElementById('music-player');
+
+    if (tracks.length > 0) {
+        populateTrackSelect();
+        loadTrack(currentTrack);
+    }
+
+    // Sélection via menu déroulant
+    document.getElementById('track-select').addEventListener('change', function() {
+        currentTrack = parseInt(this.value, 10);
+        loadTrack(currentTrack);
+        document.getElementById('audio').play();
+    });
+    // Gestion de la boucle
+    document.getElementById('loop-audio').addEventListener('change', function() {
+        document.getElementById('audio').loop = this.checked;
+    });
+    // ...existing code...
+    // Ajout du bouton toggle (bulle)
+
+    const toggleBtn = document.createElement('button');
+    toggleBtn.id = "music-toggle-btn";
+    toggleBtn.textContent = "−";
+    toggleBtn.title = "Réduire/Agrandir le lecteur";
+    toggleBtn.style.position = "absolute";
+    toggleBtn.style.top = "6px";
+    toggleBtn.style.right = "6px";
+    toggleBtn.style.background = "#e3eaff";
+    toggleBtn.style.border = "none";
+    toggleBtn.style.borderRadius = "50%";
+    toggleBtn.style.width = "26px";
+    toggleBtn.style.height = "26px";
+    toggleBtn.style.cursor = "pointer";
+    toggleBtn.style.fontSize = "1.1em";
+    toggleBtn.style.fontWeight = "bold";
+    toggleBtn.style.color = "#1e3c72";
+    toggleBtn.style.boxShadow = "0 2px 8px rgba(30,60,114,0.12)";
+    toggleBtn.style.zIndex = "101";
+    player.style.position = "fixed";
+    player.appendChild(toggleBtn);
+
+    // Ajout du resize (coin en bas à droite)
+    const resizeHandle = document.createElement('div');
+    resizeHandle.style.position = "absolute";
+    resizeHandle.style.right = "2px";
+    resizeHandle.style.bottom = "2px";
+    resizeHandle.style.width = "14px";
+    resizeHandle.style.height = "14px";
+    resizeHandle.style.cursor = "nwse-resize";
+    resizeHandle.style.background = "rgba(79,140,255,0.13)";
+    resizeHandle.style.borderRadius = "4px";
+    resizeHandle.title = "Redimensionner";
+    player.appendChild(resizeHandle);
+
+    player.style.minWidth = "180px"; // Largeur minimale
+    player.style.minHeight = "60px"; // Hauteur minimale
+    player.style.width = "300px"; // Largeur initiale
+    player.style.height = "250px"; // Hauteur initiale
+
+    let reduced = false;
+    let prevWidth = player.offsetWidth;
+    let prevHeight = player.offsetHeight;
+
+    toggleBtn.addEventListener('click', function() {
+        reduced = !reduced;
+        if (reduced) {
+            prevWidth = player.offsetWidth;
+            prevHeight = player.offsetHeight;
+            player.style.width = "44px";
+            player.style.height = "44px";
+            player.style.minWidth = "44px";
+            player.style.minHeight = "44px";
+            player.style.overflow = "hidden";
+            // Cache tout sauf le bouton et le resize
+            Array.from(player.children).forEach((el) => {
+                if (el !== toggleBtn && el !== resizeHandle) el.style.display = "none";
+            });
+            toggleBtn.textContent = "+";
+            toggleBtn.title = "Agrandir le lecteur";
+            toggleBtn.style.zIndex = "102";
+        } else {
+            player.style.width = prevWidth + "px";
+            player.style.height = prevHeight + "px";
+            player.style.minWidth = "";
+            player.style.minHeight = "";
+            player.style.overflow = "";
+            Array.from(player.children).forEach((el) => {
+                if (el !== toggleBtn && el !== resizeHandle) el.style.display = "";
+            });
+            toggleBtn.textContent = "−";
+            toggleBtn.title = "Réduire le lecteur";
+        }
+    });
+
+    // Resize logic
+    let isResizing = false, startX, startY, startWidth, startHeight;
+    resizeHandle.addEventListener('mousedown', function(e) {
+        if (reduced) return; // Pas de resize en mode réduit
+        isResizing = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        startWidth = player.offsetWidth;
+        startHeight = player.offsetHeight;
+        document.body.style.userSelect = "none";
+    });
+    document.addEventListener('mousemove', function(e) {
+        if (!isResizing) return;
+        let newWidth = Math.max(180, startWidth + (e.clientX - startX));
+        let newHeight = Math.max(60, startHeight + (e.clientY - startY));
+        player.style.width = newWidth + "px";
+        player.style.height = newHeight + "px";
+        // Ajuste la largeur des éléments internes si besoin
+        const audio = player.querySelector('audio');
+        const select = player.querySelector('select');
+        if (audio) audio.style.width = Math.max(120, newWidth - 20) + "px";
+        if (select) select.style.width = Math.max(120, newWidth - 20) + "px";
+    });
+    document.addEventListener('mouseup', function() {
+        if (isResizing) {
+            isResizing = false;
+            document.body.style.userSelect = "";
+        }
+    });
+
+    // --- Drag & Drop pour déplacer le lecteur ---
+    let isDragging = false, dragOffsetX = 0, dragOffsetY = 0;
+    const dragZone = player; // On utilise le bouton toggle comme poignée
+
+    //dragZone.style.cursor = "grab";
+
+    dragZone.addEventListener('mousedown', function(e) {
+        isDragging = true;
+        dragOffsetX = e.clientX - player.getBoundingClientRect().left;
+        dragOffsetY = e.clientY - player.getBoundingClientRect().top;
+        player.style.transition = "none";
+        dragZone.style.cursor = "grabbing";
+        document.body.style.userSelect = "none";
+    });
+
+    document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        // Limites de la fenêtre
+        const minLeft = 0;
+        const minTop = 0;
+        const maxLeft = window.innerWidth - player.offsetWidth;
+        const maxTop = window.innerHeight - player.offsetHeight;
+        let newLeft = e.clientX - dragOffsetX;
+        let newTop = e.clientY - dragOffsetY;
+        // Empêche de sortir de l'écran
+        newLeft = Math.max(minLeft, Math.min(maxLeft, newLeft));
+        newTop = Math.max(minTop, Math.min(maxTop, newTop));
+        player.style.left = newLeft + "px";
+        player.style.top = newTop + "px";
+        player.style.right = "";
+        player.style.position = "fixed";
+    });
+
+    document.addEventListener('mouseup', function() {
+        if (isDragging) {
+            isDragging = false;
+            dragZone.style.cursor = "default";
+            document.body.style.userSelect = "";
+        }
+    });
+
+    // ...reste du code...
+
+    // Lecture automatique de la piste suivante à la fin
+    /// const audio = document.getElementById('audio');
+    audio.addEventListener('ended', function() {
+        // Si la boucle est activée, ne rien faire (HTML5 gère déjà la boucle)
+        if (!audio.loop) {
+            nextTrack();
+        }
+    });
+});
