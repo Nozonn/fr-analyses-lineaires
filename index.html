@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Textes Étudiés</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    
+    <main>
+        <section id="excerpt-list-section">
+            <h2>Textes</h2>
+            <ul id="excerpt-list" style="list-style: none;">
+                <!-- Excerpts will be populated here -->
+            </ul>
+        </section>
+
+        <!-- Ajoute ceci dans <main>, après excerpt-list-section -->
+        <section id="game-section" style="display:none; margin-top:30px;">
+            <h2 id="game-title"></h2>
+            <div id="game-infos"></div>
+            <div id="inputs-container"></div>
+            <div id="btn-container">
+                <button onclick="validate()" id="btnValidate">Valider</button>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="data/intro.js"></script>
+    <script src="scripts/main.js"></script>
+</body>
+
+</html>
