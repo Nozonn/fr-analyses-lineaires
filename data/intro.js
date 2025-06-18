@@ -106,7 +106,7 @@ const excerpts = [
         title: "Mes forêts",
         author: "Hélène Dorion",
         loc: "Mes forêts sont de longues traînées de temps",
-        pbm: "Comme l'évocation poétique de la nature propose-t-elle un voyage au coeur de l'intime dans cet écrit liminaire ?",
+        pbm: "Comment l'évocation poétique de la nature propose-t-elle un voyage au coeur de l'intime dans cet écrit liminaire ?",
         plan: [
             "1 - Les forêts, entre dureté et douceur",
             "2 - Les forêts, un voyage temporel vers l'intime",
