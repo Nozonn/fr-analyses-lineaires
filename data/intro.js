@@ -17,7 +17,7 @@ const excerpts = [
         title: "Les Caractères",
         author: "Jean de La Bruyère",
         loc: "Arias",
-        pbm: "Comment ce personnage se révèle-t-il l'exact opposé de l'honnête homme et ainsi comme sa description invite-elle le lecteur à réfléchir à l'égocentrisme et au mensonge ?",
+        pbm: "Comment ce personnage se révèle-t-il l'exact opposé de l'honnête homme et ainsi comment sa description invite-elle le lecteur à réfléchir à l'égocentrisme et au mensonge ?",
         plan: [
             "Mouvement 1 : La figure de l'imposteur égocentrique",
             "Mouvement 2 : Le menteur placé face à ses propres limites",
