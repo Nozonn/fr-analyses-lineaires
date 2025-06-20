@@ -97,6 +97,7 @@ function game(ex) {
     let ph = maskPhrase(words, idxMissing);
 
     if (idxPhrases > 0) ph = "Mouvement " + idxPhrases + " : " + ph;
+    if (idxPhrases === 0) ph = ph + " ?"
 
     document.getElementById("game-infos").innerHTML = ph;
 

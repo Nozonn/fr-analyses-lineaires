@@ -166,6 +166,10 @@ const renumMouvements = plan => plan.map((item, idx) => {
 });
 
 excerpts.forEach(ex => {
+    if (typeof ex.pbm === "string") {
+        ex.pbm = ex.pbm.replace(/\s*\?+$/, "");
+    }
+
     if (Array.isArray(ex.plan)) {
         ex.plan = renumMouvements(ex.plan);
     }
