@@ -71,15 +71,59 @@ function showElements(ex) {
     // Affiche la section jeu, cache la liste
     document.getElementById("game-section").style.display = "block";
     // Affiche le titre (loc, title, author)
-    document.getElementById("game-title").textContent = `${ex.loc} - ${ex.title} - ${ex.author}`;
+    const gameTitle = document.getElementById("game-title");
+    gameTitle.textContent = `${ex.loc} - ${ex.title} - ${ex.author}`;
 
+    // Ajoute un seul event listener proprement (évite les bugs de multiples callbacks)
+    const newGameTitle = gameTitle.cloneNode(true);
+    gameTitle.parentNode.replaceChild(newGameTitle, gameTitle);
 
+    // Effet stylisé au survol et au clic
+    newGameTitle.style.transition = "color 0.2s, text-shadow 0.2s";
+    newGameTitle.style.cursor = "pointer";
+
+    newGameTitle.addEventListener("mouseenter", () => {
+        newGameTitle.style.color = "#4f8cff";
+        newGameTitle.style.textShadow = "0 2px 8px #b3d1ff";
+    });
+    newGameTitle.addEventListener("mouseleave", () => {
+        newGameTitle.style.color = "#1e3c72";
+        newGameTitle.style.textShadow = "none";
+    });
+    newGameTitle.addEventListener("mousedown", () => {
+        newGameTitle.style.color = "#e74c3c";
+        newGameTitle.style.textShadow = "0 2px 12px #ffd6d6";
+    });
+    newGameTitle.addEventListener("mouseup", () => {
+        newGameTitle.style.color = "#4f8cff";
+        newGameTitle.style.textShadow = "0 2px 8px #b3d1ff";
+    });
+
+    newGameTitle.addEventListener("click", () => {
+        // Réinitialise tout proprement
+        totalQuestions = 0;
+        totalCorrect = 0;
+        recapErrors = [];
+        idxPhrases = 0;
+        attempts = 0;
+        document.getElementById("game-section").style.display = "none";
+        document.getElementById("excerpt-list-section").style.display = "block";
+        document.getElementById("btn-container").style.display = "block";
+        document.getElementById("game-infos").innerHTML = "";
+        document.getElementById("inputs-container").innerHTML = "";
+        createExcerptList();
+    });
 }
 
 
 function game(ex) {
     resetGame(ex); // Réinitialise le jeu
     showElements(ex); // Affiche les éléments du jeu
+
+    // Réinitialise le bouton Valider à chaque nouvelle question
+    const btnValidate = document.getElementById("btnValidate");
+    btnValidate.textContent = "Valider";
+    btnValidate.onclick = validate;
 
     phrases.push(ex.pbm, ...ex.plan); // Ajoute la problématique et le plan dans le tableau des phrases 
 
