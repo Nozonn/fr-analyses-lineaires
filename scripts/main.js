@@ -7,12 +7,16 @@ function createExcerptList() {
         const li = document.createElement('li');
         li.id = `excerpt-${idx}`;
         li.className = 'excerpts';
+
+        let plan = [...ex.plan];
+        plan.forEach((mv, i) => plan[i] = `Mouvement ${i + 1} : ${mv}`);
+
         li.innerHTML = `
             <span class="arrow" style="cursor:pointer;">&#9654;</span>
             <span class="excerpt-label">${ex.loc} - ${ex.title} - ${ex.author}</span>
             <div class="excerpt-details">
-                <span style="color:green;"><strong>Problématique :</strong> <div>${ex.pbm}</div></span>
-                <span><strong>Plan :</strong> <div>${ex.plan.join("<br>")}</div></span>
+                <span style="color:green;"><strong>Problématique :</strong> <div>${ex.pbm + " ?"}</div></span><br>
+                <span><strong>Plan :</strong> <div><span>${plan.join("</span><br><span style='margin-top:2px'>")}</span></div></span>
             </div>
         `;
         // Flèche pour déplier/replier
@@ -97,11 +101,11 @@ function game(ex) {
     let ph = maskPhrase(words, idxMissing);
 
     if (idxPhrases > 0) ph = "Mouvement " + idxPhrases + " : " + ph;
-    if (idxPhrases === 0) ph = ph + " ?"
+    if (idxPhrases === 0) ph += " ?";
 
     document.getElementById("game-infos").innerHTML = ph;
 
-    
+
     idxMissing.forEach((_, index) => {
         const wrapper = document.createElement("div");
         wrapper.style.width = "100%";
@@ -124,7 +128,7 @@ function showCorrection(words) {
     inputDivs.forEach((input, i) => {
         const parent = input.parentElement;
         const expected = words[idxMissing[i]];
-        const user = input.value.trim();
+
         if (parent.classList.contains('input-wrong')) {
             // Affiche la correction dans l'input en rouge
             input.value = expected;
@@ -135,9 +139,29 @@ function showCorrection(words) {
     });
 
     // Affiche la correction sous les inputs
-    let correction = '<div id="correction" style="color:#c0392b; margin-top:18px; font-weight:bold;">Réponse : ';
-    correction += idxMissing.map(i => words[i]).join(" / ");
-    correction += '</div>';
+
+    let phrase = [...words];
+    let correction = '<div id="correction" style="margin-top:18px; font-weight:bold;">Correction :<br><span style="font-size:1.1em;">';
+
+    if (idxPhrases > 0) correction += "Mouvement " + idxPhrases + " : ";
+
+    inputDivs.forEach((input, i) => {
+        const idx = idxMissing[i];
+        const expected = words[idx];
+        if (input.parentElement.classList.contains('input-correct')) {
+            phrase[idx] = `<span style="color:#27ae60; font-weight:bold;">${expected}</span>`;
+        } else {
+            phrase[idx] = `<span style="color:#e74c3c; font-weight:bold;">${expected}</span>`;
+        }
+    });
+
+    correction += phrase.join(" ");
+
+    if (idxPhrases === 0) correction += " ?";
+
+
+    correction += '</span></div>';
+
     if (!document.getElementById("correction")) {
         inputsContainer.insertAdjacentHTML('afterend', correction);
     }
@@ -164,24 +188,32 @@ function validate() {
             parent.classList.add('input-wrong');
             input.value = "";
             allCorrect = false;
-            currentErrors.push({mot: expected, reponse: user});
+            currentErrors.push({ mot: expected, reponse: user });
         }
     });
 
     attempts++;
     totalQuestions += inputDivs.length;
 
+
+
     if (allCorrect) {
         totalCorrect += inputDivs.length;
         document.getElementById("btnValidate").textContent = "Suivant";
         document.getElementById("btnValidate").onclick = nextStep;
-    } else if (attempts >= 3) {
-        // Stocke les erreurs pour le récap
-        currentErrors.forEach(err => recapErrors.push({
-            phrase: phrases[idxPhrases],
-            attendu: err.mot,
-            donne: err.reponse
-        }));
+        return;
+    }
+
+    // Stocke les erreurs pour le récap
+    currentErrors.forEach(err => recapErrors.push({
+        phrase: phrases[idxPhrases],
+        attendu: err.mot,
+        donne: err.reponse
+    }));
+
+
+    if (attempts >= 3) {
+
         showCorrection(words);
         document.getElementById("btnValidate").textContent = "Suivant";
         document.getElementById("btnValidate").onclick = nextStep;
@@ -190,7 +222,7 @@ function validate() {
 
 
 // Ajoute ce bloc à la fin de ton fichier ou après la déclaration de validate()
-document.addEventListener('keydown', function(e) {
+document.addEventListener('keydown', function (e) {
     // Si la section jeu est visible et qu'un input est focus
     if (
         document.getElementById("game-section").style.display === "block" &&
@@ -221,17 +253,53 @@ function nextStep() {
 function showFinalScore() {
     document.getElementById("game-title").textContent = "Score final";
     let html = `<div style="font-size:1.2em; margin-bottom:18px;">
-        Bravo ! Tu as trouvé <span style="color:#27ae60;font-weight:bold;">${totalCorrect}</span> mot(s) sur <span style="color:#1e3c72;font-weight:bold;">${totalQuestions}</span>.
+        Bravo ! Tu as trouvé <span style="color:#27ae60;font-weight:bold;">${totalQuestions - recapErrors.length}</span> mot(s) sur <span style="color:#1e3c72;font-weight:bold;">${totalQuestions}</span>.
     </div>`;
 
-    if (recapErrors.length > 0) {
-        html += `<div style="margin-bottom:18px;"><strong>Erreurs :</strong><ul style="color:#e74c3c;">`;
-        recapErrors.forEach(err => {
-            html += `<li>
-                <em>${err.phrase}</em><br>
-                Attendu : <b>${err.attendu}</b> | Ta réponse : <b>${err.donne || "(vide)"}</b>
-            </li>`;
+    // Retire les doublons de recapErrors (même phrase + attendu)
+    const uniqueErrors = [];
+    const seen = new Set();
+    recapErrors.forEach(err => {
+        const key = err.phrase + '|' + err.attendu;
+        if (!seen.has(key)) {
+            uniqueErrors.push(err);
+            seen.add(key);
+        }
+    });
+
+    if (uniqueErrors.length > 0) {
+        // Regroupe les erreurs par phrase
+        const groupedErrors = {};
+        uniqueErrors.forEach(err => {
+            if (!groupedErrors[err.phrase]) groupedErrors[err.phrase] = [];
+            groupedErrors[err.phrase].push(err);
         });
+
+        html += `
+    <div style="margin-bottom:18px;">
+        <strong style="font-size:1.1em; color:#e74c3c;">Erreurs :</strong>
+        <ul style="list-style:none; padding:0; margin:12px 0 0 0;">
+    `;
+
+        Object.entries(groupedErrors).forEach(([phrase, errors]) => {
+            html += `
+        <li style="background:#fff3f3; border:1px solid #ffd6d6; border-radius:8px; margin-bottom:14px; padding:12px 16px;">
+            <div style="font-size:1em; color:#1e3c72; margin-bottom:7px;">
+                <em>${phrase}</em>
+            </div>
+            <ul style="list-style:none; padding:0; margin:0;">
+        `;
+            errors.forEach(err => {
+                html += `
+                <li style="margin-bottom:4px;">
+                    <span style="color:#888;">Attendu :</span> <b style="color:#27ae60;">${err.attendu}</b>
+                    <span style="color:#888; margin-left:10px;">| Ta réponse :</span> <b style="color:#e74c3c;">${err.donne || "(vide)"}</b>
+                </li>
+            `;
+            });
+            html += `</ul></li>`;
+        });
+
         html += `</ul></div>`;
     } else {
         html += `<div style="color:#27ae60; font-weight:bold;">Aucune erreur, félicitations !</div>`;
@@ -371,7 +439,7 @@ function prevTrack() {
 
 
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const player = document.getElementById('music-player');
 
     if (tracks.length > 0) {
@@ -380,13 +448,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Sélection via menu déroulant
-    document.getElementById('track-select').addEventListener('change', function() {
+    document.getElementById('track-select').addEventListener('change', function () {
         currentTrack = parseInt(this.value, 10);
         loadTrack(currentTrack);
         document.getElementById('audio').play();
     });
     // Gestion de la boucle
-    document.getElementById('loop-audio').addEventListener('change', function() {
+    document.getElementById('loop-audio').addEventListener('change', function () {
         document.getElementById('audio').loop = this.checked;
     });
     // ...existing code...
@@ -435,7 +503,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let prevWidth = player.offsetWidth;
     let prevHeight = player.offsetHeight;
 
-    toggleBtn.addEventListener('click', function() {
+    toggleBtn.addEventListener('click', function () {
         reduced = !reduced;
         if (reduced) {
             prevWidth = player.offsetWidth;
@@ -468,7 +536,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Resize logic
     let isResizing = false, startX, startY, startWidth, startHeight;
-    resizeHandle.addEventListener('mousedown', function(e) {
+    resizeHandle.addEventListener('mousedown', function (e) {
         if (reduced) return; // Pas de resize en mode réduit
         isResizing = true;
         startX = e.clientX;
@@ -477,7 +545,7 @@ document.addEventListener('DOMContentLoaded', function() {
         startHeight = player.offsetHeight;
         document.body.style.userSelect = "none";
     });
-    document.addEventListener('mousemove', function(e) {
+    document.addEventListener('mousemove', function (e) {
         if (!isResizing) return;
         let newWidth = Math.max(180, startWidth + (e.clientX - startX));
         let newHeight = Math.max(60, startHeight + (e.clientY - startY));
@@ -489,7 +557,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (audio) audio.style.width = Math.max(120, newWidth - 20) + "px";
         if (select) select.style.width = Math.max(120, newWidth - 20) + "px";
     });
-    document.addEventListener('mouseup', function() {
+    document.addEventListener('mouseup', function () {
         if (isResizing) {
             isResizing = false;
             document.body.style.userSelect = "";
@@ -502,7 +570,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     //dragZone.style.cursor = "grab";
 
-    dragZone.addEventListener('mousedown', function(e) {
+    dragZone.addEventListener('mousedown', function (e) {
         isDragging = true;
         dragOffsetX = e.clientX - player.getBoundingClientRect().left;
         dragOffsetY = e.clientY - player.getBoundingClientRect().top;
@@ -511,7 +579,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.style.userSelect = "none";
     });
 
-    document.addEventListener('mousemove', function(e) {
+    document.addEventListener('mousemove', function (e) {
         if (!isDragging) return;
         // Limites de la fenêtre
         const minLeft = 0;
@@ -529,7 +597,7 @@ document.addEventListener('DOMContentLoaded', function() {
         player.style.position = "fixed";
     });
 
-    document.addEventListener('mouseup', function() {
+    document.addEventListener('mouseup', function () {
         if (isDragging) {
             isDragging = false;
             dragZone.style.cursor = "default";
@@ -541,7 +609,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Lecture automatique de la piste suivante à la fin
     /// const audio = document.getElementById('audio');
-    audio.addEventListener('ended', function() {
+    audio.addEventListener('ended', function () {
         // Si la boucle est activée, ne rien faire (HTML5 gère déjà la boucle)
         if (!audio.loop) {
             nextTrack();
