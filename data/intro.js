@@ -5,7 +5,7 @@ const excerpts = [
         title: "Les Fables",
         author: "Jean de La Fontaine",
         loc: "Les Obsèques de la Lionne",
-        pbm: "Comment cette fable invite-elle à la réflexion sur la société d'apparence et la crédulité ?",
+        pbm: "Comment cette fable invite-t-elle à la réflexion sur la société d'apparence et la crédulité ?",
         plan: [
             "Mouvement 1 : Un deuil général affecté",
             "Mouvement 2 : Une attitude marginale et dangereuse",
@@ -17,7 +17,7 @@ const excerpts = [
         title: "Les Caractères",
         author: "Jean de La Bruyère",
         loc: "Arias",
-        pbm: "Comment ce personnage se révèle-t-il l'exact opposé de l'honnête homme et ainsi comment sa description invite-elle le lecteur à réfléchir à l'égocentrisme et au mensonge ?",
+        pbm: "Comment ce personnage se révèle-t-il l'exact opposé de l'honnête homme et ainsi comment sa description invite-t-elle les lecteurs à réfléchir à l'égocentrisme et au mensonge ?",
         plan: [
             "Mouvement 1 : La figure de l'imposteur égocentrique",
             "Mouvement 2 : Le menteur placé face à ses propres limites",
@@ -162,7 +162,7 @@ const excerpts = [
 // Correction des plans pour uniformiser les intitulés "Mouvement X :"
 const renumMouvements = plan => plan.map((item, idx) => {
     // Remplace "1 -", "2 -", etc. par "Mouvement X :"
-    return item.replace(/^(\d+)\s*-\s*/, `Mouvement ${idx + 1} : `);
+    return item.replace(/^(\d+)\s*-\s*/, "").replace(/^Mouvement\s*(\d+)\s*:\s*/, "");
 });
 
 excerpts.forEach(ex => {
