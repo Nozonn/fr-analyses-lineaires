@@ -125,7 +125,10 @@ function game(ex) {
     btnValidate.textContent = "Valider";
     btnValidate.onclick = validate;
 
-    phrases.push(ex.pbm, ...ex.plan); // Ajoute la problématique et le plan dans le tableau des phrases 
+    // Nettoie le plan : retire tout ce qui est entre parenthèses (et les parenthèses)
+    const planSansPar = ex.plan.map(p => p.replace(/\s*\([^)]*\)/g, '').trim());
+
+    phrases.push(ex.pbm, ...planSansPar); // Ajoute la problématique et le plan nettoyé dans le tableau des phrases 
 
     // On masque des mots aléatoires dans la première phrase (problématique)
     let words = phrases[idxPhrases].split(" ");
